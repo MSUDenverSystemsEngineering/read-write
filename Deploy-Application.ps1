@@ -45,7 +45,8 @@ Param (
 	[Parameter(Mandatory=$false)]
 	[switch]$TerminalServerMode = $false,
 	[Parameter(Mandatory=$false)]
-	[switch]$DisableLogging = $false
+	[switch]$DisableLogging = $false,
+	[switch]$StandaloneInstallation = $false
 )
 
 Try {
@@ -62,7 +63,7 @@ Try {
 	[string]$appArch = 'x86'
 	[string]$appLang = 'EN'
 	[string]$appRevision = '01'
-	[string]$appScriptVersion = '1.1.0'
+	[string]$appScriptVersion = '1.1.1'
 	[string]$appScriptDate = '04/06/2017'
 	[string]$appScriptAuthor = 'Jordan Hamilton'
 	##*===============================================
@@ -132,7 +133,7 @@ Try {
 		}
 
 		## <Perform Installation tasks here>
-		If (((Test-Battery -PassThru).IsLaptop) -or ((Get-HardwarePlatform) -like "Virtual*")) {
+		If (((Test-Battery -PassThru).IsLaptop) -or ((Get-HardwarePlatform) -like "Virtual*") -or ($StandaloneInstallation)) {
 			New-Folder -Path "$envPublic\RWAdmin"
 			$exitCode = Execute-Process -Path "Setup.exe" -WindowStyle "Hidden" -PassThru -WaitForMsiExec
 			If (($exitCode.ExitCode -ne "0") -and ($mainExitCode -ne "3010")) {
