@@ -62,8 +62,8 @@ Try {
 	[string]$appArch = 'x86'
 	[string]$appLang = 'EN'
 	[string]$appRevision = '01'
-	[string]$appScriptVersion = '1.0.0'
-	[string]$appScriptDate = '03/10/2017'
+	[string]$appScriptVersion = '1.1.0'
+	[string]$appScriptDate = '04/06/2017'
 	[string]$appScriptAuthor = 'Jordan Hamilton'
 	##*===============================================
 	## Variables: Install Titles (Only set here to override defaults set by the toolkit)
@@ -118,7 +118,7 @@ Try {
 		Show-InstallationProgress
 
 		## <Perform Pre-Installation tasks here>
-		New-Folder -Path "$envPublic\RWAdmin"
+
 
 		##*===============================================
 		##* INSTALLATION
@@ -132,10 +132,19 @@ Try {
 		}
 
 		## <Perform Installation tasks here>
-		$exitCode = Execute-Process -Path "Setup.exe" -WindowStyle "Hidden" -PassThru -WaitForMsiExec
-		If (($exitCode.ExitCode -ne "0") -and ($mainExitCode -ne "3010")) {
-			$mainExitCode = $exitCode.ExitCode
+		If (((Test-Battery -PassThru).IsLaptop) -or ((Get-HardwarePlatform) -like "Virtual*")) {
+			New-Folder -Path "$envPublic\RWAdmin"
+			$exitCode = Execute-Process -Path "Setup.exe" -WindowStyle "Hidden" -PassThru -WaitForMsiExec
+			If (($exitCode.ExitCode -ne "0") -and ($mainExitCode -ne "3010")) {
+				$mainExitCode = $exitCode.ExitCode
+			}
+			Copy-File -Path "$dirSupportFiles\rwl.dat" -Destination "$envPublic\RWAdmin"
+			Remove-File -Path "$envCommonDesktop\Read&Write 11.lnk" -ContinueOnError $true
 		}
+		Else {
+			Copy-File -Path "$dirSupportFiles\Read&Write Gold.lnk" -Destination "$envCommonStartMenuPrograms"
+		}
+
 
 		##*===============================================
 		##* POST-INSTALLATION
@@ -143,7 +152,6 @@ Try {
 		[string]$installPhase = 'Post-Installation'
 
 		## <Perform Post-Installation tasks here>
-		Copy-File -Path "$dirSupportFiles\rwl.dat" -Destination "$envPublic\RWAdmin\rwl.dat"
 
 		## Display a message at the end of the install
 		If (-not $useDefaultMsi) {}
@@ -176,7 +184,17 @@ Try {
 		}
 
 		# <Perform Uninstallation tasks here>
-
+		If (((Test-Battery -PassThru).IsLaptop) -or ((Get-HardwarePlatform) -like "Virtual*")) {
+			$exitCode = Remove-MSIApplications -Name "Read And Write" -PassThru
+			If (($exitCode.ExitCode -ne "0") -and ($mainExitCode -ne "3010")) {
+				$mainExitCode = $exitCode.ExitCode
+			}
+			Remove-File -Path "$envPublic\RWAdmin\rwl.dat" -ContinueOnError $true
+			Remove-Folder -Path "$envPublic\RWAdmin" -ContinueOnError $true
+		}
+		Else {
+			Remove-File -Path "$envCommonStartMenuPrograms\Read&Write Gold.lnk" -ContinueOnError $true
+		}
 
 		##*===============================================
 		##* POST-UNINSTALLATION
