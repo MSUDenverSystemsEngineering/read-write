@@ -46,6 +46,7 @@ Param (
 	[switch]$TerminalServerMode = $false,
 	[Parameter(Mandatory=$false)]
 	[switch]$DisableLogging = $false,
+	[Parameter(Mandatory=$false)]
 	[switch]$StandaloneInstallation = $false
 )
 
@@ -60,11 +61,11 @@ Try {
 	[string]$appVendor = 'Texthelp'
 	[string]$appName = 'Read&Write'
 	[string]$appVersion = '11.5.5 Gold'
-	[string]$appArch = 'x86'
+	[string]$appArch = 'x85'
 	[string]$appLang = 'EN'
 	[string]$appRevision = '01'
-	[string]$appScriptVersion = '1.1.1'
-	[string]$appScriptDate = '04/06/2017'
+	[string]$appScriptVersion = '1.0.0'
+	[string]$appScriptDate = '04/26/2017'
 	[string]$appScriptAuthor = 'Jordan Hamilton'
 	##*===============================================
 	## Variables: Install Titles (Only set here to override defaults set by the toolkit)
@@ -112,7 +113,7 @@ Try {
 		##*===============================================
 		[string]$installPhase = 'Pre-Installation'
 
-		## Show Welcome Message, close browsers and Office apps, verify there is enough disk space to complete the install, and persist the prompt
+		## Show Welcome Message, close Read&Write, verify there is enough disk space to complete the install, and persist the prompt
 		Show-InstallationWelcome -CloseApps 'readandwrite' -CheckDiskSpace -PersistPrompt
 
 		## Show Progress Message (with the default message)
@@ -133,19 +134,16 @@ Try {
 		}
 
 		## <Perform Installation tasks here>
-		If (((Test-Battery -PassThru).IsLaptop) -or ((Get-HardwarePlatform) -like "Virtual*") -or ($StandaloneInstallation)) {
+		If (((Test-Battery -PassThru).IsLaptop) -or ((Get-HardwarePlatform) -like "Virtual*") -or $StandaloneInstallation) {
 			New-Folder -Path "$envPublic\RWAdmin"
 			$exitCode = Execute-Process -Path "Setup.exe" -WindowStyle "Hidden" -PassThru -WaitForMsiExec
-			If (($exitCode.ExitCode -ne "0") -and ($mainExitCode -ne "3010")) {
-				$mainExitCode = $exitCode.ExitCode
-			}
+			If (($exitCode.ExitCode -ne "0") -and ($mainExitCode -ne "3010")) { $mainExitCode = $exitCode.ExitCode }
 			Copy-File -Path "$dirSupportFiles\rwl.dat" -Destination "$envPublic\RWAdmin"
 			Remove-File -Path "$envCommonDesktop\Read&Write 11.lnk" -ContinueOnError $true
 		}
 		Else {
 			Copy-File -Path "$dirSupportFiles\Read&Write Gold.lnk" -Destination "$envCommonStartMenuPrograms"
 		}
-
 
 		##*===============================================
 		##* POST-INSTALLATION
@@ -185,17 +183,11 @@ Try {
 		}
 
 		# <Perform Uninstallation tasks here>
-		If (((Test-Battery -PassThru).IsLaptop) -or ((Get-HardwarePlatform) -like "Virtual*")) {
-			$exitCode = Remove-MSIApplications -Name "Read And Write" -PassThru
-			If (($exitCode.ExitCode -ne "0") -and ($mainExitCode -ne "3010")) {
-				$mainExitCode = $exitCode.ExitCode
-			}
-			Remove-File -Path "$envPublic\RWAdmin\rwl.dat" -ContinueOnError $true
-			Remove-Folder -Path "$envPublic\RWAdmin" -ContinueOnError $true
-		}
-		Else {
-			Remove-File -Path "$envCommonStartMenuPrograms\Read&Write Gold.lnk" -ContinueOnError $true
-		}
+		$exitCode = Remove-MSIApplications -Name "Read And Write" -PassThru
+		If (($exitCode.ExitCode -ne "0") -and ($mainExitCode -ne "3010")) { $mainExitCode = $exitCode.ExitCode }
+		Remove-File -Path "$envPublic\RWAdmin\rwl.dat" -ContinueOnError $true
+		Remove-Folder -Path "$envPublic\RWAdmin" -ContinueOnError $true
+		Remove-File -Path "$envCommonStartMenuPrograms\Read&Write Gold.lnk" -ContinueOnError $true
 
 		##*===============================================
 		##* POST-UNINSTALLATION
@@ -225,8 +217,8 @@ Catch {
 # SIG # Begin signature block
 # MIIU4wYJKoZIhvcNAQcCoIIU1DCCFNACAQExDzANBglghkgBZQMEAgEFADB5Bgor
 # BgEEAYI3AgEEoGswaTA0BgorBgEEAYI3AgEeMCYCAwEAAAQQH8w7YFlLCE63JNLG
-# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCBgzZnTV2CiqHJL
-# wWBZAaxBJbiav/IKybaCwRMnf4xwk6CCD4cwggQUMIIC/KADAgECAgsEAAAAAAEv
+# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCDeJnrBtxz8EpGW
+# 5mCLSDGDi+lFnbv6UNwXjpDcc84IJ6CCD4cwggQUMIIC/KADAgECAgsEAAAAAAEv
 # TuFS1zANBgkqhkiG9w0BAQUFADBXMQswCQYDVQQGEwJCRTEZMBcGA1UEChMQR2xv
 # YmFsU2lnbiBudi1zYTEQMA4GA1UECxMHUm9vdCBDQTEbMBkGA1UEAxMSR2xvYmFs
 # U2lnbiBSb290IENBMB4XDTExMDQxMzEwMDAwMFoXDTI4MDEyODEyMDAwMFowUjEL
@@ -313,26 +305,26 @@ Catch {
 # FgNlZHUxGTAXBgoJkiaJk/IsZAEZFgltc3VkZW52ZXIxFTATBgoJkiaJk/IsZAEZ
 # FgV3aW5hZDEZMBcGA1UEAxMQd2luYWQtVk1XQ0EwMS1DQQITfwAAACITuo77mvOv
 # 9AABAAAAIjANBglghkgBZQMEAgEFAKBmMBgGCisGAQQBgjcCAQwxCjAIoAKAAKEC
-# gAAwGQYJKoZIhvcNAQkDMQwGCisGAQQBgjcCAQQwLwYJKoZIhvcNAQkEMSIEIOjV
-# Zfl5YWyZvSLoozPXTRv8C6mhdvMMtxAM9Gw4Zh5RMA0GCSqGSIb3DQEBAQUABIIB
-# ABTxBedTMCuy7ZPBtLMtRRRByeSPpF0zTlj4bbx1UbERvvTCjiVHrcsftuh6rJpE
-# lmzqq6Ou9vn1pTNLHmCUwXa9UwB927arEpvJoi89kaYWIsduYJWxHUjeEkdppIuF
-# vB29pyvbvtGO24ii79M4x0/KamyZxjJ70V1RLdkibodVIKOV/+4CnyP6uanZCfBs
-# 8pwi9j03UXKWQ8xjPDMZf75XMLpsHknEb8+iDnJYk4GLFNV98WbREYoOGRa3nPBn
-# Da2kkigK9GFXpWMKWfsCRL2gzDzVwwcTN7Ms8DjOu9Ek+PN8NNnONzqooPP6Nggi
-# +n5cbZ862i7s5rj1iOfFUb2hggKiMIICngYJKoZIhvcNAQkGMYICjzCCAosCAQEw
+# gAAwGQYJKoZIhvcNAQkDMQwGCisGAQQBgjcCAQQwLwYJKoZIhvcNAQkEMSIEIBae
+# 3DV0qqt0NWBwYZQyMAjwPz+QCJ0CNJucvTZkETyyMA0GCSqGSIb3DQEBAQUABIIB
+# AHFnvdHTUz4Re3au2d6trsDJulGCw1zzf8x64/U/Ao2SVArKKBJ8O0WiiGnXqpla
+# Xn1oF/do8YIQ0urgb6sV0ZTKCf8+pmgAv8NZ6B3dHSHfCZnaG8qY0b0RGdb2Thcj
+# d36sylELw28HaQKhgOqAyCEKXOvH+por7tWhbU3AVfM9j2yJebhQUi2N2fC7YtJm
+# pNodW62JXYhWAnRMLLE1Pj6qPTZF24WMLWDsXCNkJ5e1M6gdqryZTCXAatnx4fqM
+# tVsk3R05mDoaKQnr/FV6eCh+a2XrU2Gi2f9a3PAMa3Lyr02UD3s0WJwP48JMCi4E
+# y1Y8GdYrOWyWGxslAjiCZ4uhggKiMIICngYJKoZIhvcNAQkGMYICjzCCAosCAQEw
 # aDBSMQswCQYDVQQGEwJCRTEZMBcGA1UEChMQR2xvYmFsU2lnbiBudi1zYTEoMCYG
 # A1UEAxMfR2xvYmFsU2lnbiBUaW1lc3RhbXBpbmcgQ0EgLSBHMgISESHWmadklz7x
 # +EJ+6RnMU0EUMAkGBSsOAwIaBQCggf0wGAYJKoZIhvcNAQkDMQsGCSqGSIb3DQEH
-# ATAcBgkqhkiG9w0BCQUxDxcNMTcwNDA2MTYzOTIxWjAjBgkqhkiG9w0BCQQxFgQU
-# xAu8AdnWdrMEnVtaM4X0j5wNM8UwgZ0GCyqGSIb3DQEJEAIMMYGNMIGKMIGHMIGE
+# ATAcBgkqhkiG9w0BCQUxDxcNMTcwNDI2MTM0OTI4WjAjBgkqhkiG9w0BCQQxFgQU
+# 3ukMLWC8I6OE6X+hh/DhwyhjzZwwgZ0GCyqGSIb3DQEJEAIMMYGNMIGKMIGHMIGE
 # BBRjuC+rYfWDkJaVBQsAJJxQKTPseTBsMFakVDBSMQswCQYDVQQGEwJCRTEZMBcG
 # A1UEChMQR2xvYmFsU2lnbiBudi1zYTEoMCYGA1UEAxMfR2xvYmFsU2lnbiBUaW1l
 # c3RhbXBpbmcgQ0EgLSBHMgISESHWmadklz7x+EJ+6RnMU0EUMA0GCSqGSIb3DQEB
-# AQUABIIBAF60O5tDLxAhE3O/ILQZ9wt5Ax46XJ6XUsZ2Z4DPVBZipWn48Mguozfg
-# eQYCFVZNGOrN4TSD3uV/95p8PqtNx8c9YpJ3f81pyY5yunzqmRdiWhCFKsMl4k6h
-# 0jopz98xZlUFAHVaqpd7Tf/HjCUIOtI1fvzPIyoowSB2iwDDB+GJELXGrPTEqjlm
-# I4rfPXEFYbyoQUBZwic2RpLrWG0g/HAN4BQfsakg1scmepT9qOMNEaKgAVdfaaK7
-# sRjH9I+IRdTJ3LHQJFg58B9Ef/IIMRiDciNlJ6MwfRxa0iVrEaSU67a7mAFV6NOH
-# VQmDEVM5oNa1u4Mv1l7F8T2HO0vBuzk=
+# AQUABIIBACixt72XVZ5XhDbq7eDHt7Hgnn19iKdIq47iiy1XXpHEcaA8ObDYaEmb
+# V03jHQlyBKr/DY1JHljYveoXBOeMANBqVJNF9R9cgsZil0LtGsIbM0pz7nNhLNow
+# 1raUHWwmgosd3h9RJtctBIKjvqlLzFb56vOyba5am8VhAOaY4ujG5OYZ7LSACVSq
+# 5e7vURr60aBhUYfxYxRkMz5pPbrWMhBwodrtKz9pvVBHZfdJyF0Nw/tGCESLzJKy
+# WDisK+EQBvgPULwBYv8SB4KLiPsWdQxItMvzVQ9XTJnOa55kUx85Nm6PTdjQZrso
+# IcGDzkmOBVZonEaf3LEXbt7kHUhltsA=
 # SIG # End signature block
