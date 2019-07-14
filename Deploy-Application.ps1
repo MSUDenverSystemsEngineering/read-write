@@ -162,6 +162,7 @@ Try {
 
 		# Adds in user licensing (https://support.texthelp.com/help/deployment-option-2---using-the-multi-user-setup-tool)
 		Execute-MSI -Action 'Install' -Path "$dirSupportFiles\ReadAndWriteConfig.msi" -Parameters 'REBOOT=ReallySuppress /QN'
+		Remove-File -Path "$envCommonDesktop\Read&Write.lnk" -ContinueOnError $true
 		## Display a message at the end of the install
 		If (-not $useDefaultMsi) {}
 	}
