@@ -160,6 +160,8 @@ Try {
 
 		## <Perform Post-Installation tasks here>
 
+		# Adds in user licensing (https://support.texthelp.com/help/deployment-option-2---using-the-multi-user-setup-tool)
+		Execute-MSI -Action 'Install' -Path "$dirSupportFiles\ReadAndWriteConfig.msi" -Parameters 'REBOOT=ReallySuppress /QN'
 		## Display a message at the end of the install
 		If (-not $useDefaultMsi) {}
 	}
@@ -191,8 +193,8 @@ Try {
 		}
 
 		# <Perform Uninstallation tasks here>
-		$exitCode = Remove-MSIApplications -Name "Read&Write" -PassThru
-		If (($exitCode.ExitCode -ne "0") -and ($mainExitCode -ne "3010")) { $mainExitCode = $exitCode.ExitCode }
+		Remove-MSIApplications -Name "Read&Write" -PassThru
+
 
 		<# legacy code for 11.5
 
@@ -230,8 +232,8 @@ Catch {
 # SIG # Begin signature block
 # MIIfagYJKoZIhvcNAQcCoIIfWzCCH1cCAQExDzANBglghkgBZQMEAgEFADB5Bgor
 # BgEEAYI3AgEEoGswaTA0BgorBgEEAYI3AgEeMCYCAwEAAAQQH8w7YFlLCE63JNLG
-# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCAqe0Wjby1xKFKu
-# WrSRLx13+s/8kHERgcsuCNUByIsmKKCCGdcwggQUMIIC/KADAgECAgsEAAAAAAEv
+# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCAC+ejNMEeSTYy4
+# BuL191opL3tRX8LmYOlUl4YX6d507KCCGdcwggQUMIIC/KADAgECAgsEAAAAAAEv
 # TuFS1zANBgkqhkiG9w0BAQUFADBXMQswCQYDVQQGEwJCRTEZMBcGA1UEChMQR2xv
 # YmFsU2lnbiBudi1zYTEQMA4GA1UECxMHUm9vdCBDQTEbMBkGA1UEAxMSR2xvYmFs
 # U2lnbiBSb290IENBMB4XDTExMDQxMzEwMDAwMFoXDTI4MDEyODEyMDAwMFowUjEL
@@ -375,25 +377,25 @@ Catch {
 # ZGUgU2lnbmluZyBDQQIQBwNx0Q95WkBxmSuUB2Kb4jANBglghkgBZQMEAgEFAKCB
 # hDAYBgorBgEEAYI3AgEMMQowCKACgAChAoAAMBkGCSqGSIb3DQEJAzEMBgorBgEE
 # AYI3AgEEMBwGCisGAQQBgjcCAQsxDjAMBgorBgEEAYI3AgEVMC8GCSqGSIb3DQEJ
-# BDEiBCBhYqmsAeRyhkmL29JPWrF6ePF9nEoRodXv5II78ChHuzANBgkqhkiG9w0B
-# AQEFAASCAQDKUELwSbI6fyPVB6Ek/T058BT0LWF7KBaEM7DViTEEEbh5XRytDsnQ
-# vZCcDnoOhZp7hMXekLUM2lvjRmo3xj96jETbpukkUt8Un6h4axF6K5KfaRVYrOif
-# H2XjJnsiAEtm/Vzv99NE3jWmnkQXgjxnPSuuQY2BQ9Lm2mgK6c0I6sph9bbyl/SM
-# C2FsvfJUq/n5yKsaJqOEBhbxFRd959cPLJdhPsJrPiZGbHmyh9+jF6CX7WuEnBV8
-# DSCGMuWZ2iFTP8Er/m+UBvjlRm7Oz5Arkro2vMfzg+2Ak+wO9tmAPyaLaw9g9jfm
-# sLDkmk8LPXqP08o4uByKGHxlueL2ThV+oYICojCCAp4GCSqGSIb3DQEJBjGCAo8w
+# BDEiBCC9iYfdxhHSEdsWPFZ9i0XhcEfPwCjTIas68B7b1fLCNjANBgkqhkiG9w0B
+# AQEFAASCAQBNeRJOchw8HXa0c4v1mOX8KfVpSqihjj7A/WqJXRXMB5dL0RsfdQTm
+# yKz7wqbmtPpFQqDEO8Uxx7fF86pT+B0sz2WCfFsXOi5vwb3EjYWsD/CaAvDGuqm0
+# 31pG9N58J1xI2382agewqWCn/78WYX7EF7K/GElM6d5OoHYc5nLkakbUrmiKLTre
+# glLU746I3ioaVHGFiGitQYIVfxjtIpYmNAbLGJvf5eu2srZwD5SSoTN1/y+J7JQO
+# Cb04dvK2Re6UVpMUhxylPBmKf5TCWJZWRAqS+iEVVHflaqarbw6TYVFMWKZKHKqx
+# lyI7rf5emJhF3M2qigoiyawrgnfwSPDaoYICojCCAp4GCSqGSIb3DQEJBjGCAo8w
 # ggKLAgEBMGgwUjELMAkGA1UEBhMCQkUxGTAXBgNVBAoTEEdsb2JhbFNpZ24gbnYt
 # c2ExKDAmBgNVBAMTH0dsb2JhbFNpZ24gVGltZXN0YW1waW5nIENBIC0gRzICEhEh
 # 1pmnZJc+8fhCfukZzFNBFDAJBgUrDgMCGgUAoIH9MBgGCSqGSIb3DQEJAzELBgkq
-# hkiG9w0BBwEwHAYJKoZIhvcNAQkFMQ8XDTE5MDcxNDE2NDAyNFowIwYJKoZIhvcN
-# AQkEMRYEFIFrPWbL6DyfvLm+12G6bDy0VvLtMIGdBgsqhkiG9w0BCRACDDGBjTCB
+# hkiG9w0BBwEwHAYJKoZIhvcNAQkFMQ8XDTE5MDcxNDE3NDEzOVowIwYJKoZIhvcN
+# AQkEMRYEFBj5TwU0kS/BjtbmFI2ryulEK+dtMIGdBgsqhkiG9w0BCRACDDGBjTCB
 # ijCBhzCBhAQUY7gvq2H1g5CWlQULACScUCkz7HkwbDBWpFQwUjELMAkGA1UEBhMC
 # QkUxGTAXBgNVBAoTEEdsb2JhbFNpZ24gbnYtc2ExKDAmBgNVBAMTH0dsb2JhbFNp
 # Z24gVGltZXN0YW1waW5nIENBIC0gRzICEhEh1pmnZJc+8fhCfukZzFNBFDANBgkq
-# hkiG9w0BAQEFAASCAQAodJQXQyUIQgHccx9JVVbs8ERlkaqEU1dYGGQ5Osc58l0g
-# IsfPgzwvIrBBpb1UFFRJjsEkrHcIMXaOAEr+x/ImECut22EwSfXk8mS4TF+QPCwF
-# QlkJtbVQjxLwxAiek3jJqc9kzXPordHylroJejwoG2bgzLlBv9vuu+S17nRVpDwU
-# kBxUMulXs8CnQI5tC+y/LWkfa45ViWQ2maXHaKPqm0VpN0Oy4QxD5Uq2XixDCZOL
-# wkkdmixD2wX/G+vnBa11FQ+SJnKVmmyjMvfGf8N5myk79iasX/sJgz9N0QTtpM4q
-# HvOKgsp0kGEbEMhL1h3jFIMx0ImIvPaIkdH9Jbol
+# hkiG9w0BAQEFAASCAQCY5iWX0SSsyOhgqjBSmwcGOMLan0Fw3sGS4yoIKaNWgJ4t
+# 8vfYW+AR7d58J563gthl7+KOnvmDgi1XhnBctNwF6aixCr03OdxY3lZa5dFpffhj
+# WrYteOMp88EVpdrz/TdfZ5IlVk1nEwuxPtoK7y32jpi+1cVAsrhjofZ39h4vlZ90
+# yAc1ouvGLW08M0cZM6jG6B4rFIFb66v3H7+FnSbHocfF6lEG40A0n8I4lkVEiQjZ
+# IDzpuF4KBYxGxHyUf5+ZaCBxgVGpFNZF8ACPj812xxxmFT9MQelrkCemEJRySea+
+# 1Q28IThk2Ht0106UZ+QVZeMAZAL3YXZE94bc3xd1
 # SIG # End signature block
